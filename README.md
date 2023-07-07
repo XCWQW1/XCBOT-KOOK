@@ -14,8 +14,6 @@
   
 一个python萌新写的kook机器人屎山框架
 
-本项目仅使用main.py即可运行，会自动初始化
-
 <details>
 <summary>开始使用：</summary>
 
