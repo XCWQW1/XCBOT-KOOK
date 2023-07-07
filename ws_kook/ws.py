@@ -43,19 +43,24 @@ def process_message(data, plugin_list, name_list):
 
     if data['s'] == 0 and data['d']['type'] == 9:
         try:
-            channel_user_bot = data.get("d", "").get("extra", "").get("author", "").get("bot", "")
+            channel_user_bot = data.get("d", {}).get("extra", {}).get("author", {}).get("bot", "")
         except Exception as e:
             channel_user_bot = ""
+
         if not channel_user_bot:
             channel_type = data['d']['channel_type']
+
             if channel_type == "GROUP" and data['d']['type'] != 255:
                 try:
-                    channel_name = data.get("d", "").get("extra", "").get("channel_name", "")
-                    channel_message = data.get("d", "").get("extra", "").get("kmarkdown", "").get("raw_content", "")
-                    channel_user_id = data.get("d", "").get("extra", "").get("author", "").get("id", "")
-                    channel_user_name = data.get("d", "").get("extra", "").get("author", "").get("username", "")
-                    channel_user_nickname = data.get("d", "").get("extra", "").get("author", "").get("nickname", "")
-                    target_id = data.get("d", "").get("extra", "").get("guild_id", "")
+                    channel_extra = data.get("d", {}).get("extra", {})
+                    channel_name = channel_extra.get("channel_name", "")
+                    channel_message = channel_extra.get("kmarkdown", {}).get("raw_content", "")
+                    channel_user = channel_extra.get("author", {})
+                    channel_user_id = channel_user.get("id", "")
+                    channel_user_name = channel_user.get("username", "")
+                    channel_user_nickname = channel_user.get("nickname", "")
+                    target_id = channel_extra.get("guild_id", "")
+
                 except Exception as e:
                     channel_name = ""
                     channel_message = ""
@@ -63,9 +68,11 @@ def process_message(data, plugin_list, name_list):
                     channel_user_name = ""
                     channel_user_nickname = ""
                     target_id = ""
-                channel_id = data.get("d", "").get("target_id", "")
-                channel_message_id = data.get("d", "").get("msg_id", "")
+
+                channel_id = data.get("d", {}).get("target_id", "")
+                channel_message_id = data.get("d", {}).get("msg_id", "")
                 target_name = kook_api.get_target_name(target_id)
+
             else:
                 channel_id = ""
                 channel_name = ""
@@ -77,18 +84,54 @@ def process_message(data, plugin_list, name_list):
                 channel_user_bot = ""
                 target_id = ""
                 target_name = ""
+
             if channel_type == "GROUP":
                 Log.accepted_info(channel_message, channel_message_id, channel_user_nickname, channel_user_name,
                                   channel_user_id, channel_id, channel_name, target_id, target_name)
+        else:
+            channel_id = ""
+            channel_name = ""
+            channel_message = ""
+            channel_message_id = ""
+            channel_user_id = ""
+            channel_user_name = ""
+            channel_user_nickname = ""
+            channel_user_bot = ""
+            target_id = ""
+            target_name = ""
 
-                for index, (plugin, name) in enumerate(zip(plugin_list, name_list)):
-                    # 调用插件
-                    try:
-                        start_process(func=plugin, args=(channel_id, channel_name, channel_message, channel_message_id, channel_user_id, channel_user_name, channel_user_nickname, channel_user_bot, target_id, target_name, data))
-                    except Exception as e:
-                        Log.error("error", f"调用插件 {name} 报错：{e}")
     elif data['s'] == 0 and data['d']['type'] == 2:
+        channel_id = ""
+        channel_name = ""
+        channel_message = ""
+        channel_message_id = ""
+        channel_user_id = ""
+        channel_user_name = ""
+        channel_user_nickname = ""
+        channel_user_bot = ""
+        target_id = ""
+        target_name = ""
         pass
+    else:
+        channel_id = ""
+        channel_name = ""
+        channel_message = ""
+        channel_message_id = ""
+        channel_user_id = ""
+        channel_user_name = ""
+        channel_user_nickname = ""
+        channel_user_bot = ""
+        target_id = ""
+        target_name = ""
+
+    for index, (plugin, name) in enumerate(zip(plugin_list, name_list)):
+        # 调用插件
+        try:
+            start_process(func=plugin, args=(
+                channel_id, channel_name, channel_message, channel_message_id, channel_user_id,
+                channel_user_name, channel_user_nickname, channel_user_bot, target_id, target_name, data))
+        except Exception as e:
+            Log.error("error", f"调用插件 {name} 报错：{e}")
 
 
 async def connect_to_kook_server():
@@ -136,13 +179,14 @@ async def connect_to_kook_server():
                         data = json.loads(message)
 
                         if data['s'] == 1 and data['d']['code'] == 0:
-                            Log.initialize(f'接收到了kook传回的HELLO包，判断为连接成功，获取到的会话ID为：{data["d"]["session_id"]}')
+                            Log.initialize(
+                                f'接收到了kook传回的HELLO包，判断为连接成功，获取到的会话ID为：{data["d"]["session_id"]}')
                         elif data['s'] == 1 and data['d']['code'] != 0:
-                            Log.error('error', '没有接收到kook传回的HELLO包，判断为连接超时，请检查网络或是DNS服务等并重新尝试')
+                            Log.error('error',
+                                      '没有接收到kook传回的HELLO包，判断为连接超时，请检查网络或是DNS服务等并重新尝试')
                             sys.exit(0)
 
                         # 使用新线程处理其他类型的消息
                         start_thread(process_message, (data, plugin_list, name_list))
         except Exception as e:
             Log.error('error', f"{e}")
-
