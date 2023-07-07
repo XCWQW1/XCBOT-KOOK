@@ -1,0 +1,10 @@
+colorama
+requests
+art
+websockets
+Jinja2
+MarkupSafe
+Werkzeug
+blinker
+click
+itsdangerous
