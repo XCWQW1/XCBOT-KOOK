@@ -159,6 +159,20 @@ class KOOKApi:
         else:
             return response['code']
 
+    def add_reaction(self, msg_id: str, emoji: str) -> str:
+        """
+        给指定消息添加指定emoji
+        :param msg_id:  # 要添加的消息id
+        :param emoji:  # 要添加的emoji
+        :return:  # 成功后返回code
+        """
+        post_data = {
+            "msg_id": msg_id,
+            "emoji": emoji
+        }
+        request = self.kook_http_api_post("/api/v3/message/add-reaction", post_data)
+        return request['code']
+
     #################
     #     未完工     #
     #################
