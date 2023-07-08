@@ -71,6 +71,9 @@
     - [ ] 语音频道播放音乐
   
   - #### 框架API
-    - [ ] onebot V11
+    - [ ] onebot V11  （会做一些更改，比如send_group_msg会变成send_target_msg
     - [x] http api （只有一个发送消息的api也算是吧？后面慢慢完善
+    - [ ] 正向ws
+    - [ ] 反向ws
+    - [ ] http post
 </details>
