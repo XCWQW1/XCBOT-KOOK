@@ -41,3 +41,7 @@ def plugin(channel_id, channel_name, channel_message, channel_message_id, channe
             }
         ]  # 可用kook官方的卡片编辑器生成json : https://www.kookapp.cn/tools/message-builder.html#/card
         API.send_channel_msg(json.dumps(json_data), 10, channel_id)  # 消息ID设置为10即可发送，引用无效
+
+    # 对消息添加回应
+    if channel_message == "TEST-3":
+        API.add_reaction(channel_message_id, '✅')  # 要按顺序填入消息ID和要回应的emoji或emoji ID或GuilEmoji
