@@ -6,7 +6,7 @@ sdk = KOOKApi()
 
 
 class Card:
-    def send_img(self, url: str, channel_id: int):
+    def send_img(self, url: str, channel_id: int) -> str:
         json_img = [
             {
                 "type": "card",
@@ -27,3 +27,23 @@ class Card:
         ]
 
         return sdk.send_channel_msg(json.dumps(json_img), 10, channel_id)
+
+    def send_msg(self, msg: str, channel_id: int) -> str:
+        json_data = [
+            {
+                "type": "card",
+                "theme": "secondary",
+                "size": "lg",
+                "modules": [
+                    {
+                        "type": "header",
+                        "text": {
+                            "type": "plain-text",
+                            "content": msg
+                        }
+                    }
+                ]
+            }
+        ]
+
+        return sdk.send_channel_msg(json.dumps(json_data), 10, channel_id)
