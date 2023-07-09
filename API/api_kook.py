@@ -173,10 +173,10 @@ class KOOKApi:
         request = self.kook_http_api_post("/api/v3/message/add-reaction", post_data)
         return request['code']
 
-    def update_message(self, msg_id: str, new_msg: str, type: Optional[int] = 9, quote: Optional[str] = None) -> str:
+    def update_message(self, msg_id: str, new_msg: str, quote: Optional[str] = None) -> str:
         """
         更新指定消息
-        :param type: # 消息类型不输入默认9
+        :param quote:
         :param msg_id:  # 要更新的消息id
         :param new_msg:  # 要更新的消息
         :return:  # 成功后返回code
@@ -184,14 +184,12 @@ class KOOKApi:
         if quote:
             post_data = {
                 "msg_id": msg_id,
-                "content": new_msg,
-                "type": type
+                "content": new_msg
             }
         else:
             post_data = {
                 "msg_id": msg_id,
                 "content": new_msg,
-                "type": type,
                 "quote": quote
             }
         request = self.kook_http_api_post("/api/v3/message/update", post_data)
