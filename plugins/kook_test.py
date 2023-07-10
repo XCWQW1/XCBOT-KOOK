@@ -7,7 +7,7 @@ API = KOOKApi()
 API_CARD = Card()
 
 
-def plugin(channel_id, channel_name, channel_message, channel_message_id, channel_user_id, channel_user_name,
+def plugin(msg_type, channel_id, channel_name, channel_message, channel_message_id, channel_user_id, channel_user_name,
            channel_user_nickname, channel_user_bot, target_id, target_name, data):
     # 基础指令触发以及发送
     if channel_message == "TEST-0":

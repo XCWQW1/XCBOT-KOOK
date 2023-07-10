@@ -41,78 +41,40 @@ def process_message(data, plugin_list, name_list):
     # print(data)
     # DEBUG
 
-    if data['s'] == 0 and data['d']['type'] == 9:
+    try:
+        channel_user_bot = data.get("d", {}).get("extra", {}).get("author", {}).get("bot", "")
+    except Exception as e:
+        channel_user_bot = ""
+
+    if not channel_user_bot:
+        channel_type = data.get("d").get("channel_type", "")
         try:
-            channel_user_bot = data.get("d", {}).get("extra", {}).get("author", {}).get("bot", "")
+            channel_extra = data.get("d", {}).get("extra", {})
+            channel_name = channel_extra.get("channel_name", "")
+            channel_message = data.get("d").get("content", "")
+            channel_user = channel_extra.get("author", "")
+            channel_user_id = channel_user.get("id", "")
+            channel_user_name = channel_user.get("username", "")
+            channel_user_nickname = channel_user.get("nickname", "")
+            target_id = channel_extra.get("guild_id", "")
+            msg_type = data.get("d", "").get("type", "")
+
         except Exception as e:
-            channel_user_bot = ""
-
-        if not channel_user_bot:
-            channel_type = data['d']['channel_type']
-
-            if channel_type == "GROUP" and data['d']['type'] != 255:
-                try:
-                    channel_extra = data.get("d", {}).get("extra", {})
-                    channel_name = channel_extra.get("channel_name", "")
-                    channel_message = channel_extra.get("kmarkdown", {}).get("raw_content", "")
-                    channel_user = channel_extra.get("author", {})
-                    channel_user_id = channel_user.get("id", "")
-                    channel_user_name = channel_user.get("username", "")
-                    channel_user_nickname = channel_user.get("nickname", "")
-                    target_id = channel_extra.get("guild_id", "")
-
-                except Exception as e:
-                    channel_name = ""
-                    channel_message = ""
-                    channel_user_id = ""
-                    channel_user_name = ""
-                    channel_user_nickname = ""
-                    target_id = ""
-
-                channel_id = data.get("d", {}).get("target_id", "")
-                channel_message_id = data.get("d", {}).get("msg_id", "")
-                target_name = kook_api.get_target_name(target_id)
-
-            else:
-                channel_id = ""
-                channel_name = ""
-                channel_message = ""
-                channel_message_id = ""
-                channel_user_id = ""
-                channel_user_name = ""
-                channel_user_nickname = ""
-                channel_user_bot = ""
-                target_id = ""
-                target_name = ""
-
-            if channel_type == "GROUP":
-                Log.accepted_info(channel_message, channel_message_id, channel_user_nickname, channel_user_name,
-                                  channel_user_id, channel_id, channel_name, target_id, target_name)
-        else:
-            channel_id = ""
+            msg_type = ""
             channel_name = ""
             channel_message = ""
-            channel_message_id = ""
             channel_user_id = ""
             channel_user_name = ""
             channel_user_nickname = ""
-            channel_user_bot = ""
             target_id = ""
-            target_name = ""
 
-    elif data['s'] == 0 and data['d']['type'] == 2:
-        channel_id = ""
-        channel_name = ""
-        channel_message = ""
-        channel_message_id = ""
-        channel_user_id = ""
-        channel_user_name = ""
-        channel_user_nickname = ""
-        channel_user_bot = ""
-        target_id = ""
-        target_name = ""
-        pass
+        channel_id = data.get("d", {}).get("target_id", "")
+        channel_message_id = data.get("d", {}).get("msg_id", "")
+        target_name = kook_api.get_target_name(target_id)
+
     else:
+        msg_type = ""
+        channel_type = ""
         channel_id = ""
         channel_name = ""
         channel_message = ""
@@ -123,12 +85,15 @@ def process_message(data, plugin_list, name_list):
         channel_user_bot = ""
         target_id = ""
         target_name = ""
+
+    Log.accepted_info(channel_type, msg_type, channel_message, channel_message_id, channel_user_nickname, channel_user_name,
+                      channel_user_id, channel_id, channel_name, target_id, target_name)
 
     for index, (plugin, name) in enumerate(zip(plugin_list, name_list)):
         # 调用插件
         try:
             start_process(func=plugin, args=(
-                channel_id, channel_name, channel_message, channel_message_id, channel_user_id,
+                msg_type, channel_id, channel_name, channel_message, channel_message_id, channel_user_id,
                 channel_user_name, channel_user_nickname, channel_user_bot, target_id, target_name, data))
         except Exception as e:
             Log.error("error", f"调用插件 {name} 报错：{e}")
@@ -177,7 +142,6 @@ async def connect_to_kook_server():
                     async for message in websocket:
                         message = zlib.decompress(message)
                         data = json.loads(message)
-
                         if data['s'] == 1 and data['d']['code'] == 0:
                             Log.initialize(
                                 f'接收到了kook传回的HELLO包，判断为连接成功，获取到的会话ID为：{data["d"]["session_id"]}')
