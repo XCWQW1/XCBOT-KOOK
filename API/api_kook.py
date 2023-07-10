@@ -106,9 +106,9 @@ class KOOKApi:
 
         if request['code'] == 0:
             if msg_type == 1:
-                Log.send(send_msg, channel_id, request['data']['msg_id'])
+                Log.send(msg_type, send_msg, channel_id, request['data']['msg_id'])
             else:
-                Log.send("[非正常消息]", channel_id, request['data']['msg_id'])
+                Log.send(msg_type, send_msg, channel_id, request['data']['msg_id'])
             return request['data']['msg_id']
         else:
             return request['code']

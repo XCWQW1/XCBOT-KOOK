@@ -1,5 +1,7 @@
 import inspect
 import queue
+import sys
+
 import time
 import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -108,46 +110,45 @@ def start_thread_no_return(func, args):
 def start_process(func, args):
     from API.api_log import Log
 
-    # 创建一个队列对象
     result_queue = Queue()
 
-    # 在新进程中执行函数，并将结果存入队列中
     def process_func():
         try:
             process_result = func(*args)
             result_queue.put(process_result)
         except Exception as e_1:
             # 打印完整的异常信息
-            Log.error("error", f"多进程报错：{inspect.getsourcefile(func)} | {traceback.print_exc()}")
+            Log.error("error", f"多进程报错：{inspect.getsourcefile(func)} | {str(e_1)}")
             result_queue.put(e_1)
 
     try:
-        # 创建进程对象
-        process = Process(target=process_func)
+        process = None
+        if sys.platform == 'win32':
+            # Windows平台
+            from multiprocessing import freeze_support
+            freeze_support()  # Windows下运行需要添加这行代码
+            process = Process(target=process_func)
 
-        # 启动进程
+        else:
+            # 其他平台
+            process = Process(target=process_func)
+
         process.start()
 
     except Exception as e:
-        Log.error("error", f"多进程报错：{inspect.getsourcefile(func)} | {traceback.print_exc()}")
+        Log.error("error", f"多进程报错：{inspect.getsourcefile(func)} | {str(e)}")
         return None
 
-    # 获取所有进程的结果
     results = []
     while not result_queue.empty():
         results.append(result_queue.get())
 
-    # 处理结果
     for result in results:
-        # 如果结果是异常对象，将异常信息打印出来
         if isinstance(result, Exception):
             now_time_and_day = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime())
             log_file = f'errors/{now_time_and_day}.log'  # 日志文件名
             with open(log_file, 'a') as f_log:
-                # 使用 traceback 模块打印完整的错误信息
                 trace = ''.join(traceback.format_exception(type(result), result, result.__traceback__))
-                # 设置日志内容
-                logs = f"[{Log.now_time()}] [错误] [进] {inspect.getsourcefile(func)} | {traceback.print_exc()}"
-                # 显示日志
+                logs = f"[{Log.now_time()}] [错误] [进] {inspect.getsourcefile(func)} | {str(result)}"
                 print(logs)
-                f_log.write(f"子进程执行出错: {inspect.getsourcefile(func)} | {traceback.print_exc()}\n")
+                f_log.write(f"子进程执行出错: {inspect.getsourcefile(func)} | {str(trace)}\n")
