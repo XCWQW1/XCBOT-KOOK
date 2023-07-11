@@ -65,7 +65,69 @@ def http_api():
     try:
         app.run(host=http_api_ip, port=http_api_port)
     except Exception as e:
-        Log.error(error_txt=f'[HTTP API] 错误信息：{e}', q_message_type="error")
+        Log.error("error", f'[HTTP API] 错误信息：{e}')
+
+    @app.route('/webhook', methods=['POST'])
+    def webhook():
+        data = request.get_json()
+        sdk.send_channel_msg(data["msg"], 1, 3273270382689856)
+        LogApi.info(f"[接受] 来自：{request.remote_addr}，请求方法：{request.method}，访问：{request.url}，提交：{data}")
+        return 'OK'
+
+    @app.route('/webhook_mc', methods=['POST'])
+    def webhook_mc():
+        data = request.get_json()
+        sdk.send_channel_msg(data["msg"], 1, 1795946950814768)
+        LogApi.info(f"[接受] 来自：{request.remote_addr}，请求方法：{request.method}，访问：{request.url}，提交：{data}")
+        return 'OK'
+
+    @app.route('/webhook_ddnet', methods=['POST'])
+    def webhook_ddnet():
+        data = request.get_json()
+        sdk.send_channel_msg(data["msg"], 1, 8182745819484970)
+        LogApi.info(f"[接受] 来自：{request.remote_addr}，请求方法：{request.method}，访问：{request.url}，提交：{data}")
+        return 'OK'
+
+    @app.route('/ddn', methods=['GET'])
+    def ddn():
+        ip = request.args.get('ip')
+        if ip:
+            js_data = [
+                {
+                    "type": "card",
+                    "theme": "secondary",
+                    "size": "lg",
+                    "modules": [
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "plain-text",
+                                "content": f"服务器IP变动，当前为："
+                            }
+                        },
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "paragraph",
+                                "cols": 2,
+                                "fields": [
+                                    {
+                                        "type": "kmarkdown",
+                                        "content": "**服务器**\n钩子模式\n\n钩子模式\n\n钩子模式\n\n感染模式\n\n聊天模式\n\n榴弹夺旗模式\n\n猎人杀模式"
+                                    },
+                                    {
+                                        "type": "kmarkdown",
+                                        "content": f"**地址**\n[{ip}]:8303\n[{ip}]:8304\n[{ip}]:8305\n[{ip}]:8306\n[{ip}]:8307\n[{ip}]:8308\n[{ip}]:8309"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+            sdk.send_channel_msg(json.dumps(js_data), 10, 9933023112717409)
+            LogApi.info(f"[接受] 来自：{request.remote_addr}，请求方法：{request.method}，访问：{request.url}，提交：{ip}")
+        return 'OK'
 
 
 if __import__:
@@ -105,10 +167,7 @@ if __import__:
     http_api_port = int(c_config.get("bot_http_api", "http_api_port"))
 
     # 创建新线程
-    t = threading.Thread(target=http_api)
-
-    # 设置线程为守护线程
-    t.setDaemon(True)
+    t = threading.Thread(target=http_api, daemon=True)
 
     # 启动线程
     t.start()
