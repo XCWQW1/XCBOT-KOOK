@@ -37,10 +37,6 @@ def process_message(data, plugin_list, name_list):
     kook_token, kook_token_type = load_config()
     kook_api = KOOKApi()
 
-    # DEBUG
-    # print(data)
-    # DEBUG
-
     try:
         channel_user_bot = data.get("d", {}).get("extra", {}).get("author", {}).get("bot", "")
     except Exception as e:
@@ -48,25 +44,32 @@ def process_message(data, plugin_list, name_list):
 
     if not channel_user_bot:
         channel_type = data.get("d").get("channel_type", "")
+        channel_extra = {}
+        channel_name = ""
+        channel_message = ""
+        channel_user = {}
+        channel_user_id = ""
+        channel_user_name = ""
+        channel_user_nickname = ""
+        target_id = ""
+        msg_type = ""
+
         try:
             channel_extra = data.get("d", {}).get("extra", {})
             channel_name = channel_extra.get("channel_name", "")
-            channel_message = data.get("d").get("content", "")
-            channel_user = channel_extra.get("author", "")
+            msg_type = data.get("d", {}).get("type", "")
+            if msg_type == 9:
+                channel_message = data.get("d", "").get("extra", "").get("kmarkdown", "").get("raw_content", "")
+            else:
+                channel_message = data.get("d").get("content", "")
+            channel_user = channel_extra.get("author", {})
             channel_user_id = channel_user.get("id", "")
             channel_user_name = channel_user.get("username", "")
             channel_user_nickname = channel_user.get("nickname", "")
             target_id = channel_extra.get("guild_id", "")
-            msg_type = data.get("d", "").get("type", "")
 
         except Exception as e:
-            msg_type = ""
-            channel_name = ""
-            channel_message = ""
-            channel_user_id = ""
-            channel_user_name = ""
-            channel_user_nickname = ""
-            target_id = ""
+            pass
 
         channel_id = data.get("d", {}).get("target_id", "")
         channel_message_id = data.get("d", {}).get("msg_id", "")
@@ -149,6 +152,10 @@ async def connect_to_kook_server():
                             Log.error('error',
                                       '没有接收到kook传回的HELLO包，判断为连接超时，请检查网络或是DNS服务等并重新尝试')
                             sys.exit(0)
+
+                        # DEBUG
+                        # print(data)
+                        # DEBUG
 
                         # 使用新线程处理其他类型的消息
                         start_thread(process_message, (data, plugin_list, name_list))
