@@ -179,7 +179,7 @@ class KOOKApi:
         :param quote:
         :param msg_id:  # 要更新的消息id
         :param new_msg:  # 要更新的消息
-        :return:  # 成功后返回code
+        :return:  # 返回code
         """
         if quote:
             post_data = {
@@ -195,36 +195,46 @@ class KOOKApi:
         request = self.kook_http_api_post("/api/v3/message/update", post_data)
         return request['code']
 
-    #################
-    #     未完工     #
-    #################
-
-    def game(self, type: int) -> str:
+    def game(self, type: int) -> dict:
         """
-        未完工欢迎pr
-        :param type:
-        :return:
+        显示游戏列表
+        :param type:  类型：0全部 1用户创建 2系统创建
+        :return:  返回字典 {id: name, xxxxxxx}
         """
         get_data = {
             "type": type
         }
+
         request = self.kook_http_api_get("/api/v3/game", get_data)
-        print(request)
+
         if request['code'] == 0:
-            return request['data']
+            js_dict = {}
+            for js in request['data']['items']:
+                js_dict[js['id']] = js['name']
+            return js_dict
         else:
-            return request['code']
+            return {'code': request['code']}
 
     def create_game(self, name: str) -> str:
+        """
+        创建游戏
+        :param name:  输入游戏名
+        :return:  返回游戏id
+        """
         post_data = {
             "name": name
         }
+
         request = self.kook_http_api_post("/api/v3/game/create", post_data)
-        print(request)
+
         if request['code'] == 0:
             return request['data']['id']
         else:
             return request['code']
+
+    #################
+    #     未完工     #
+    #################
 
     def activity_game(self, id: int, data_type: int) -> str:
         post_data = {
@@ -233,3 +243,29 @@ class KOOKApi:
         }
         request = self.kook_http_api_post("/api/v3/game/activity", post_data)
         return request['code']
+
+    #################
+    #     未完工     #
+    #################
+
+    def voice_channel_user_list(self, channel_id: int):
+        post_data = {
+            "channel_id": channel_id
+        }
+        request = self.kook_http_api_post("/api/v3/channel/user-list", post_data)
+        if request['code'] == 0:
+            return request['data']
+        else:
+            return request['code']
+
+    def view_user(self, user_id: int) -> str:
+        post_data = {
+            "user_id": user_id
+        }
+
+        request = self.kook_http_api_get("/api/v3/user/view", post_data)
+
+        if request['code'] == 0:
+            return request['data']
+        else:
+            return request['code']
