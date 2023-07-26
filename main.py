@@ -3,6 +3,7 @@ import signal
 import sys
 import time
 
+# from API.api_kook import KOOKApi
 from API.api_log import LogSP
 from init.main_init import main_init
 from ws_kook.ws import connect_to_kook_server
@@ -24,6 +25,7 @@ def signal_handler(sig, frame):
     logs = f"[{now_time_1}] [信息] 程序关闭"
     LogSP.print_log(logs)
     LogSP.save_log(logs)
+    # KOOKApi().offline_user()
     sys.exit(0)
 
 

@@ -118,7 +118,7 @@ def start_process(func, args):
             result_queue.put(process_result)
         except Exception as e_1:
             # 打印完整的异常信息
-            Log.error("error", f"多进程报错：{inspect.getsourcefile(func)} | {str(e_1)}")
+            Log.error("error", f"多进程报错：{inspect.getsourcefile(func)} | {traceback.print_exc()}")
             result_queue.put(e_1)
 
     try:
@@ -136,7 +136,7 @@ def start_process(func, args):
         process.start()
 
     except Exception as e:
-        Log.error("error", f"多进程报错：{inspect.getsourcefile(func)} | {str(e)}")
+        Log.error("error", f"多进程报错：{inspect.getsourcefile(func)} | {traceback.print_exc()}")
         return None
 
     results = []

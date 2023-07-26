@@ -111,6 +111,7 @@ class KOOKApi:
                 Log.send(msg_type, send_msg, channel_id, request['data']['msg_id'])
             return request['data']['msg_id']
         else:
+            print(request)
             return request['code']
 
     def get_target_name(self, target_id: int) -> str:
@@ -126,6 +127,7 @@ class KOOKApi:
         if request['code'] == 0:
             return request['data']['name']
         else:
+            print(request)
             return request['code']
 
     def upload_files(self, file_name: Union[str, bytes]) -> str:
@@ -230,6 +232,7 @@ class KOOKApi:
         if request['code'] == 0:
             return request['data']['id']
         else:
+            print(request)
             return request['code']
 
     #################
@@ -256,6 +259,7 @@ class KOOKApi:
         if request['code'] == 0:
             return request['data']
         else:
+            print(request)
             return request['code']
 
     def view_user(self, user_id: int) -> str:
@@ -268,4 +272,14 @@ class KOOKApi:
         if request['code'] == 0:
             return request['data']
         else:
+            print(request)
+            return request['code']
+
+    def offline_user(self) -> str:
+        request = self.kook_http_api_post("/api/v3/user/offline", {})
+
+        if request['code'] == 0:
+            return request['data']
+        else:
+            print(request)
             return request['code']
