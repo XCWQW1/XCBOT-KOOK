@@ -28,7 +28,7 @@ def signal_handler(sig, frame):
     logs = f"[{now_time_1}] [信息] 程序关闭"
     LogSP.print_log(logs)
     LogSP.save_log(logs)
-    # KOOKApi().kook_http_api_post("/api/v3/user/offline", {})
+    KOOKApi().offline_user()
     sys.exit(0)
 
 
