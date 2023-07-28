@@ -1,6 +1,7 @@
 import asyncio
 import signal
 import sys
+import threading
 import time
 
 from API.api_kook import KOOKApi
@@ -20,12 +21,14 @@ def kook_bot():
 
 
 def signal_handler(sig, frame):
+    # 释放所有线程锁
+    threading._shutdown()
     current_time_1 = time.time()
     now_time_1 = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(current_time_1))
     logs = f"[{now_time_1}] [信息] 程序关闭"
     LogSP.print_log(logs)
     LogSP.save_log(logs)
-    KOOKApi().kook_http_api_post("/api/v3/user/offline", {})
+    # KOOKApi().kook_http_api_post("/api/v3/user/offline", {})
     sys.exit(0)
 
 

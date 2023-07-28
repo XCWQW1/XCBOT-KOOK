@@ -183,8 +183,7 @@ async def connect_to_kook_server():
                         data = json.loads(message)
                         if data['s'] == 1 and data['d']['code'] == 0:
                             link_status = 3
-                            Log.initialize(
-                                f'接收到了kook传回的HELLO包，判断为连接成功，获取到的会话ID为：{data["d"]["session_id"]}')
+                            Log.initialize(f'接收到了kook传回的HELLO包，判断为连接成功，获取到的会话ID为：{data["d"]["session_id"]}')
                             session_id = data["d"]["session_id"]
 
                             if sleep_time != 0:
@@ -192,15 +191,13 @@ async def connect_to_kook_server():
                                 Log.diy_log('信息', 'ws连接成功！指数回退已重置为 0s')
 
                         elif data['s'] == 1 and data['d']['code'] == 40103:
-                            Log.error('error',
-                                      f'您的TOKEN已过期，正在指数回退 {sleep_time}s 后将会重新获取Gateway并连接ws')
+                            Log.error('error', f'您的TOKEN已过期，正在指数回退 {sleep_time}s 后将会重新获取Gateway并连接ws')
                             time.sleep(sleep_time)
                             await add_sleep_time()
 
                         elif data['s'] == 1 and data['d']['code'] != 0:
                             link_status = 1
-                            Log.error('error',
-                                      f'没有接收到kook传回的HELLO包，判断为连接超时，请检查网络或是DNS服务，正在指数回退 {sleep_time}s 后将会重新获取Gateway并连接ws')
+                            Log.error('error', f'没有接收到kook传回的HELLO包，判断为连接超时，请检查网络或是DNS服务，正在指数回退 {sleep_time}s 后将会重新获取Gateway并连接ws')
                             time.sleep(sleep_time)
                             await add_sleep_time()
 
@@ -224,7 +221,6 @@ async def connect_to_kook_server():
                             else:
                                 if data['sn'] > sn:
                                     wait_json.append(data)
-                        print(sn)
 
         except Exception as e:
             Log.error('error', f"{e}")
