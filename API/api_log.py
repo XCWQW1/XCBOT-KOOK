@@ -86,7 +86,8 @@ class Log:
             # 设置群日志内容
             logs = f"[{Log.now_time()}] [信息] [频道] [接收] [{msg_type}] 服务器：[{target_name}({target_id})] 频道：[{channel_name}({channel_id})] [{channel_user_name}-{channel_user_nickname}({channel_user_id})] : {html.unescape(channel_message)} ({channel_message_id})"
         elif channel_type == "PERSON":
-            logs = f"[{Log.now_time()}] [信息] [系统] [接收] [{msg_type}] 服务器：[{target_name}({target_id})] 频道：[{channel_name}({channel_id})] [{channel_user_name}-{channel_user_nickname}({channel_user_id})] : {html.unescape(channel_message)} ({channel_message_id})"
+            pass
+            # logs = f"[{Log.now_time()}] [信息] [系统] [接收] [{msg_type}] 服务器：[{target_name}({target_id})] 频道：[{channel_name}({channel_id})] [{channel_user_name}-{channel_user_nickname}({channel_user_id})] : {html.unescape(channel_message)} ({channel_message_id})"
         elif channel_type == "BROADCAST":
             logs = f"[{Log.now_time()}] [信息] [系统] [接收] [{msg_type}] 服务器：[{target_name}({target_id})] 频道：[{channel_name}({channel_id})] [{channel_user_name}-{channel_user_nickname}({channel_user_id})] : {html.unescape(channel_message)} ({channel_message_id})"
         else:
