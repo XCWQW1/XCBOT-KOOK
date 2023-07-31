@@ -195,6 +195,8 @@ class KOOKApi:
                 "quote": quote
             }
         request = self.kook_http_api_post("/api/v3/message/update", post_data)
+        if request['code'] != 0:
+            print(request)
         return request['code']
 
     def game(self, type: int) -> dict:

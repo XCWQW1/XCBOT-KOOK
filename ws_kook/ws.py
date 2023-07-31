@@ -183,7 +183,8 @@ async def connect_to_kook_server():
                         data = json.loads(message)
                         if data['s'] == 1 and data['d']['code'] == 0:
                             link_status = 3
-                            Log.initialize(f'接收到了kook传回的HELLO包，判断为连接成功，获取到的会话ID为：{data["d"]["session_id"]}')
+                            Log.initialize(
+                                f'接收到了kook传回的HELLO包，判断为连接成功，获取到的会话ID为：{data["d"]["session_id"]}')
                             session_id = data["d"]["session_id"]
 
                             if sleep_time != 0:
@@ -191,20 +192,40 @@ async def connect_to_kook_server():
                                 Log.diy_log('信息', 'ws连接成功！指数回退已重置为 0s')
 
                         elif data['s'] == 1 and data['d']['code'] == 40103:
-                            Log.error('error', f'您的TOKEN已过期，正在指数回退 {sleep_time}s 后将会重新获取Gateway并连接ws')
+                            Log.error('error',
+                                      f'您的TOKEN已过期，正在指数回退 {sleep_time}s 后将会重新获取Gateway并连接ws')
                             time.sleep(sleep_time)
                             await add_sleep_time()
 
                         elif data['s'] == 1 and data['d']['code'] != 0:
                             link_status = 1
-                            Log.error('error', f'没有接收到kook传回的HELLO包，判断为连接超时，请检查网络或是DNS服务，正在指数回退 {sleep_time}s 后将会重新获取Gateway并连接ws')
+                            Log.error('error',
+                                      f'没有接收到kook传回的HELLO包，判断为连接超时，请检查网络或是DNS服务，正在指数回退 {sleep_time}s 后将会重新获取Gateway并连接ws')
                             time.sleep(sleep_time)
                             await add_sleep_time()
 
-                        if data['s'] == 0:
-                            if sn == 65536:
-                                sn = 1
+                        elif data['s'] == 5 and data['d']['code'] != 0:
+                            code = data['d']['code']
+                            if code == 40106:
+                                error_txt = 'resume 失败, 缺少参数'
+                            elif code == 40107:
+                                error_txt = '当前 session 已过期 (resume 失败, PING 的 sn 无效)'
+                            elif code == 40108:
+                                error_txt = '无效的 sn , 或 sn 已经不存在 (resume 失败, PING 的 sn 无效)'
+                            else:
+                                error_txt = f'未知错误 code：{code}'
 
+                            Log.error('error',
+                                      f'连接已失效，正在指数回退 {sleep_time}s 后将会重新获取Gateway并连接ws，原因：{error_txt}')
+                            time.sleep(sleep_time)
+                            await add_sleep_time()
+                            sn = 1
+                            wait_json = []
+                            link_status = 1
+                            await websocket.close()
+                            return
+
+                        if data['s'] == 0:
                             if wait_json:
                                 if sn == wait_json[0]['sn']:
                                     sn = wait_json[0]['sn'] + 1
@@ -221,6 +242,9 @@ async def connect_to_kook_server():
                             else:
                                 if data['sn'] > sn:
                                     wait_json.append(data)
+
+                            if sn == 65536:
+                                sn = 1
 
         except Exception as e:
             Log.error('error', f"{e}")
