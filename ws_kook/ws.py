@@ -1,6 +1,5 @@
 import asyncio
 import configparser
-import random
 import time
 import zlib
 import json
@@ -174,22 +173,6 @@ async def connect_to_kook_server():
                     time.sleep(sleep_time)
                     await add_sleep_time()
             elif link_status == 2:
-                async def send_ping(websocket):
-                    global sn
-                    while True:
-                        await websocket.send({"s": 2, "sn": sn})
-                        await asyncio.sleep(random.randint(25, 35))  # 随机等待 30 -+5 秒后再发送心跳 ping 包
-
-                async def receive_pong(websocket):
-                    while True:
-                        try:
-                            response = await asyncio.wait_for(websocket.recv(), timeout=6)
-                            print(response)
-                        except asyncio.TimeoutError:
-                            Log.error('error', 'ping 超时，进入指数回退')
-                            await add_sleep_time()
-                            break
-
                 async with websockets.connect(kook_ws_url) as websocket:
                     async for message in websocket:
                         # DEBUG
@@ -221,26 +204,47 @@ async def connect_to_kook_server():
                             time.sleep(sleep_time)
                             await add_sleep_time()
 
-                        if data['s'] == 0:
-                            if sn == 65536:
-                                sn = 1
+                        elif data['s'] == 5 and data['d']['code'] != 0:
+                            code = data['d']['code']
+                            if code == 40106:
+                                error_txt = 'resume 失败, 缺少参数'
+                            elif code == 40107:
+                                error_txt = '当前 session 已过期 (resume 失败, PING 的 sn 无效)'
+                            elif code == 40108:
+                                error_txt = '无效的 sn , 或 sn 已经不存在 (resume 失败, PING 的 sn 无效)'
+                            else:
+                                error_txt = f'未知错误 code：{code}'
 
+                            Log.error('error',
+                                      f'连接已失效，正在指数回退 {sleep_time}s 后将会重新获取Gateway并连接ws，原因：{error_txt}')
+                            time.sleep(sleep_time)
+                            await add_sleep_time()
+                            sn = 1
+                            wait_json = []
+                            link_status = 1
+                            await websocket.close()
+                            return
+
+                        if data['s'] == 0:
                             if wait_json:
-                                if sn + 1 == wait_json[0]['sn']:
-                                    sn = wait_json[0]['sn']
+                                if sn == wait_json[0]['sn']:
+                                    sn = wait_json[0]['sn'] + 1
                                     # 使用新线程处理其他类型的消息
                                     if link_status == 3:
                                         start_thread(process_message, (wait_json[0], plugin_list, name_list))
                                     del wait_json[0]
 
                             if sn == data['sn']:
-                                sn = sn + 1
+                                sn = data['sn'] + 1
                                 # 使用新线程处理其他类型的消息
                                 if link_status == 3:
                                     start_thread(process_message, (data, plugin_list, name_list))
                             else:
                                 if data['sn'] > sn:
                                     wait_json.append(data)
+
+                            if sn == 65536:
+                                sn = 1
 
         except Exception as e:
             Log.error('error', f"{e}")
