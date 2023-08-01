@@ -2,6 +2,8 @@
   
 # XCBOT-KOOK
 
+> 此版本已成为历史 新仓库：[kookbot2](https://github.com/XCWQW1/kookbot2)
+
 一个萌新写的多线程+多进程的垃圾KOOK机器人框架
 
 </div>
